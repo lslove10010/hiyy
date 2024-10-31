@@ -391,7 +391,7 @@ info "创建 hipyTmp 临时目录成功"
 
 info "即将开始拉取 sniffer 最新代码"
 mkdir -p resources/sniffer
-curl "https://ghproxy.cn/https://github.com/hjdhnx/hipy-sniffer/archive/refs/heads/main.zip" -sSLk -o ./hipyTmp/sniffer.zip -w "\nDownload complete. Total size: %{size_download} bytes. Speed: %{speed_download}\n"
+curl "https://ghproxy.net/https://github.com/hjdhnx/hipy-sniffer/archive/refs/heads/main.zip" -sSLk -o ./hipyTmp/sniffer.zip -w "\nDownload complete. Total size: %{size_download} bytes. Speed: %{speed_download}\n"
 unzip -q ./hipyTmp/sniffer.zip -d ./hipyTmp/sniffer
 sed -i 's/"USE_CHROME": true,/"USE_CHROME": false,/g' ./hipyTmp/sniffer/hipy-sniffer-main/quart_config.json
 mv ./hipyTmp/sniffer/hipy-sniffer-main/* ./resources/sniffer
@@ -406,7 +406,7 @@ if confirm "是否有私仓权限"; then
 	echo "GIT_PERMIT=1" >> .env
 	echo "GIT_USER=$git_username" >> .env
 	echo "GIT_TOKEN=$git_token" >> .env
-	curl "https://$git_username:$git_token@ghproxy.cn/https://github.com/hjdhnx/hipy-server/archive/refs/heads/master.zip" -sSLk -o ./hipyTmp/server.zip -w "\nDownload complete. Total size: %{size_download} bytes. Speed: %{speed_download}\n"
+	curl "https://$git_username:$git_token@ghproxy.net/https://github.com/hjdhnx/hipy-server/archive/refs/heads/master.zip" -sSLk -o ./hipyTmp/server.zip -w "\nDownload complete. Total size: %{size_download} bytes. Speed: %{speed_download}\n"
 	unzip -q ./hipyTmp/server.zip -d ./hipyTmp/server
 	mv ./hipyTmp/server/hipy-server-master/app/* ./resources/fastapi
 else
@@ -414,7 +414,7 @@ else
 	echo "GIT_USER=" >> .env
 	echo "GIT_TOKEN=" >> .env
 	#curl "https://ghproxy.cn/https://github.com/hjdhnx/hipy-server/archive/refs/heads/master.zip" -sSLk -o ./hipyTmp/server.zip
-	curl "https://ghproxy.cn/https://github.com/sanshu-rom/server-release/releases/download/latest/hipy-server-latest.zip" -sSLk -o ./hipyTmp/server.zip -w "\nDownload complete. Total size: %{size_download} bytes. Speed: %{speed_download}\n"
+	curl "https://ghproxy.net/https://github.com/sanshu-rom/server-release/releases/download/latest/hipy-server-latest.zip" -sSLk -o ./hipyTmp/server.zip -w "\nDownload complete. Total size: %{size_download} bytes. Speed: %{speed_download}\n"
 	unzip -q ./hipyTmp/server.zip -d ./hipyTmp/server
 	mv ./hipyTmp/server/hipy-server-latest/app/* ./resources/fastapi
 fi
