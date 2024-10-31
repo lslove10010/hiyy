@@ -1,0 +1,95 @@
+networks:
+  hipy-network:
+    name: hipy-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - gateway: ${SUBNET_PREFIX:?SUBNET_PREFIX required}.1
+          subnet: ${SUBNET_PREFIX}.0/24
+    driver_opts:
+      com.docker.network.bridge.name: hipy-network
+
+services:
+  sniffer:
+    container_name: hipy-sniffer
+    restart: always
+    image: hiramwong/hipy-sniffer:latest
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    volumes:
+      - ${HIPY_DIR}/resources/sniffer:/home/hipy-sniffer
+    ports:
+      - ${SNIFFER_PORT:-5708}:5708
+    networks:
+      hipy-network:
+        ipv4_address: ${SUBNET_PREFIX}.6
+  redis:
+    container_name: hipy-redis
+    restart: always
+    image: redis:latest
+    volumes:
+       - ${HIPY_DIR}/resources/redis:/data
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?redis password required}"]
+    networks:
+      hipy-network:
+        ipv4_address: ${SUBNET_PREFIX}.5
+  postgres:
+    container_name: hipy-pg
+    restart: always
+    image: postgres:15.2
+    volumes:
+      - ${HIPY_DIR}/resources/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=hipy
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?postgres password required}
+    networks:
+      hipy-network:
+        ipv4_address: ${SUBNET_PREFIX}.4
+    command: [postgres, -c, max_connections=200]
+    healthcheck:
+      test: pg_isready -U hipy -d hipy
+  fastapi:
+    container_name: hipy-fastapi
+    image: hiramwong/hipy-fastapi:latest
+    restart: always
+    volumes:
+      - ${HIPY_DIR}/resources/fastapi:/hipy
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?redis password required}
+      - SQL_PASSWORD=${POSTGRES_PASSWORD:?db password required}
+    depends_on:
+      - postgres
+      - redis
+    dns:
+      - 119.29.29.29
+      - 223.5.5.5
+      - 180.76.76.76
+      - 1.2.4.8
+      - 114.114.114.114
+      - 8.8.8.8
+    ports:
+      - ${FASTAPI_PORT:-5707}:5707
+    networks:
+      hipy-network:
+        ipv4_address: ${SUBNET_PREFIX}.3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/", "||", "exit", "1"]
+      interval: 60s
+      timeout: 60s
+      retries: 3
+  vue:
+    container_name: hipy-vue
+    image: hiramwong/hipy-vue:latest
+    restart: always
+    volumes:
+      - ${HIPY_DIR}/resources/vue:/usr/share/nginx/html
+    depends_on:
+      - fastapi
+    ports:
+      - ${VUE_PORT:-8707}:80
+    networks:
+      hipy-network:
+        ipv4_address: ${SUBNET_PREFIX}.2
